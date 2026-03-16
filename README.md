@@ -1,7 +1,7 @@
 # ML4SCI GSoC 2026 — Genie Evaluation Tasks
 
-**Author:** Muskan Khatoon
-**Frameworks:** PyTorch, PyTorch Geometric
+**Author:** Muskan Khatoon  
+**Frameworks:** PyTorch, PyTorch Geometric  
 **Compute Environment:** Kaggle GPU (Tesla P100)
 
 This repository contains my implementation of the **ML4SCI Genie evaluation tasks** for **Google Summer of Code 2026**.
@@ -9,37 +9,30 @@ This repository contains my implementation of the **ML4SCI Genie evaluation task
 The goal of these tasks is to explore **deep learning approaches for representation learning and classification of quark/gluon jet events** using both **image-based models and graph neural networks**.
 
 The work includes:
-
-• Autoencoder-based representation learning
-• Graph neural network jet classification
-• Contrastive learning for self-supervised graph representations
+- Autoencoder-based representation learning
+- Graph neural network jet classification
+- Contrastive learning for self-supervised graph representations
 
 ---
 
-# Dataset
+## Dataset
 
 The dataset consists of simulated **quark and gluon jet events** represented as detector images with three channels:
 
-• **ECAL** — electromagnetic calorimeter
-• **HCAL** — hadronic calorimeter
-• **Tracks** — particle tracking detector
+- **ECAL** — electromagnetic calorimeter
+- **HCAL** — hadronic calorimeter
+- **Tracks** — particle tracking detector
 
-Each event is a:
-
-**125 × 125 × 3 detector image**
-
-Total events:
-
-**139,306**
+Each event is a **125 × 125 × 3 detector image**.  
+Total events: **139,306**
 
 For graph-based models, detector images were converted into **point clouds and graph representations** by extracting non-zero pixels.
 
 ---
 
-# Repository Structure
-
+## Repository Structure
 ```
-ml4sci-gsoc-2026
+ml4sci-gsoc-2026/
 │
 ├── common_task_1_autoencoder/
 │   └── common_task1_autoencoder.ipynb
@@ -55,97 +48,79 @@ ml4sci-gsoc-2026
 
 ---
 
-# Common Task 1 — Autoencoder for Jet Representation Learning
+## Common Task 1 — Autoencoder for Jet Representation Learning
 
-## Objective
+### Objective
 
 Train deep autoencoder models to learn **latent representations of jet detector images**.
 
 Two architectures were implemented:
-
-• Convolutional Autoencoder (AE)
-• Variational Autoencoder (VAE)
+- Convolutional Autoencoder (AE)
+- Variational Autoencoder (VAE)
 
 Both models reconstruct the **three detector channels simultaneously**.
 
----
+### Training Setup
 
-## Training Setup
+**Loss functions:**
+- Weighted L1 reconstruction loss
+- KL divergence (for VAE)
 
-Loss functions:
+**Optimization:**
+- Adam optimizer
+- ReduceLROnPlateau scheduler
+- Early stopping
 
-• Weighted L1 reconstruction loss
-• KL divergence (for VAE)
+### Reconstruction Performance
 
-Optimization:
-
-• Adam optimizer
-• ReduceLROnPlateau scheduler
-• Early stopping
-
----
-
-## Reconstruction Performance
-
-### Reconstruction Error
+#### Reconstruction Error
 
 | Channel | Mean    | Std     |
-| ------- | ------- | ------- |
+|---------|---------|---------|
 | ECAL    | 0.01755 | 0.00968 |
 | HCAL    | 0.00677 | 0.00358 |
 | Tracks  | 0.00099 | 0.00070 |
 
-Overall mean reconstruction error:
+**Overall mean reconstruction error: 0.00844**
 
-**0.00844**
-
----
-
-### Image Quality Metrics
+#### Image Quality Metrics
 
 | Channel | MSE     | PSNR     | SSIM   |
-| ------- | ------- | -------- | ------ |
+|---------|---------|----------|--------|
 | ECAL    | 0.00003 | 27.49 dB | 0.2049 |
 | HCAL    | ~0      | 36.08 dB | 0.7009 |
 | Tracks  | ~0      | 20.30 dB | 0.1369 |
 
 The model captures the **core energy deposition structure of jets**, as seen from the original vs reconstructed images.
 
----
-
-## Latent Representation Analysis
+### Latent Representation Analysis
 
 To analyze the learned representation space:
-
-• **PCA projection**
-• **t-SNE embedding visualization**
+- **PCA projection**
+- **t-SNE embedding visualization**
 
 These visualizations reveal structure in the latent space corresponding to different jet patterns.
 
+## Reconstructed Images
+<img width="1632" height="632" alt="Common_task_1_image_reconstruction" src="https://github.com/user-attachments/assets/73f30cfe-b7a5-46c4-b8cf-871e3c0243a2" />
+
+
 ---
 
-# Common Task 2 — Graph Neural Network for Jet Classification
+## Common Task 2 — Graph Neural Network for Jet Classification
 
-## Graph Construction
+### Graph Construction
 
 Jet images were converted into graphs using the following pipeline:
-
 1. Extract **non-zero pixels**
 2. Treat each pixel as a **node**
 3. Construct edges using **k-nearest neighbors in η–φ space**
 
-Node features include detector and spatial information.
+Node features include detector and spatial information. Graphs were implemented using **PyTorch Geometric**.
 
-Graphs were implemented using **PyTorch Geometric**.
-
----
-
-# GNN Architecture — GATv2 Classifier
+### GNN Architecture — GATv2 Classifier
 
 The classification model uses a **deep GATv2 architecture with residual connections and multi-scale aggregation**.
-
-Architecture overview:
-
 ```
 Input (9 node features)
         ↓
@@ -169,51 +144,41 @@ MLP classifier
 
 This architecture captures **multi-scale jet substructure features**.
 
----
-
-# Supervised Classification Results
-
-Final results of the **GATv2 classifier**:
+### Supervised Classification Results
 
 | Metric   | Score      |
-| -------- | ---------- |
+|----------|------------|
 | ROC-AUC  | **0.7919** |
 | Accuracy | **0.7157** |
 | PR-AUC   | **0.7787** |
 
----
-
-### Classification Report
+#### Classification Report
 
 | Class | Precision | Recall | F1   |
-| ----- | --------- | ------ | ---- |
+|-------|-----------|--------|------|
 | Quark | 0.77      | 0.62   | 0.69 |
 | Gluon | 0.68      | 0.81   | 0.74 |
 
-Overall accuracy:
+**Overall accuracy: 71.6%**
 
-**71.6%**
-
+## ROC-AUC Curve 
+<img width="853" height="644" alt="Common_task_2_roc_auc" src="https://github.com/user-attachments/assets/80688875-7a69-4fcb-aa50-6601be466038" />
 ---
 
-# Specific Task — Contrastive Learning for Graph Representations
 
-To learn jet representations without supervision, a **contrastive learning framework** was implemented.
+## Specific Task — Contrastive Learning for Graph Representations
 
-The encoder is trained using **NT-Xent contrastive loss**, encouraging different augmentations of the same jet to have similar embeddings.
+To learn jet representations without supervision, a **contrastive learning framework** was implemented. The encoder is trained using **NT-Xent contrastive loss**, encouraging different augmentations of the same jet to have similar embeddings.
 
 Graph augmentations include:
+- Node feature masking
+- Edge perturbation
+- Graph topology variations
 
-• Node feature masking
-• Edge perturbation
-• Graph topology variations
-
----
-
-# Contrastive Learning Results
+### Results
 
 | Method                            | Test ROC-AUC        | Test Accuracy | Notes                          |
-| --------------------------------- | ------------------- | ------------- | ------------------------------ |
+|-----------------------------------|---------------------|---------------|--------------------------------|
 | Baseline GNN (supervised scratch) | **0.7986**          | **0.7270**    | Same architecture, labels only |
 | Contrastive linear probe          | 0.7573              | 0.6922        | Frozen encoder                 |
 | Contrastive fine-tuned            | 0.7935              | 0.7275        | Best checkpoint                |
@@ -222,63 +187,45 @@ Graph augmentations include:
 
 The contrastive fine-tuned model **matches or exceeds all baselines on average**, despite the encoder being trained **without labels during the entire 200-epoch pretraining phase**.
 
----
+### Analysis
 
-# Analysis of Contrastive Learning
+**Representation Quality**  
+The linear probe ROC-AUC of **0.757** demonstrates that the encoder learns **discriminative jet representations purely from self-supervised learning**.
 
-### Representation Quality
+**Fine-tuning Efficiency**  
+Fine-tuning improves AUC from **0.757 → 0.791**, showing the pretrained encoder provides a **strong initialization for supervised training**.
 
-The **linear probe ROC-AUC of 0.757** demonstrates that the encoder learns **discriminative jet representations purely from self-supervised learning**.
+**Augmentation Sensitivity**  
+Feature masking causes the largest AUC drop, indicating that **node-level energy and positional features carry the most discriminative information**. This aligns with known jet physics:
+- Gluon jets have **higher particle multiplicity**
+- Quark jets are **more collimated**
 
----
+**Graph Topology Robustness**  
+A k-sensitivity study shows AUC varying by only **0.005 across k ∈ {4, 8, 12, 16}**, suggesting that learned representations are **robust to graph connectivity choices**.
 
-### Fine-tuning Efficiency
+## ROC-AUC Curve 
 
-Fine-tuning improves AUC from **0.757 → 0.791**, showing that the pretrained encoder provides a **strong initialization for supervised training**.
-
----
-
-### Augmentation Sensitivity
-
-Feature masking causes the largest AUC drop, indicating that **node-level energy and positional features carry the most discriminative information**.
-
-This aligns with known jet physics:
-
-• Gluon jets have **higher particle multiplicity**
-• Quark jets are **more collimated**
+<img width="978" height="728" alt="Specific_task_1_roc_auc" src="https://github.com/user-attachments/assets/c2e5d7a0-44e1-4672-b7e6-ab993603861c" />
 
 ---
 
-### Graph Topology Robustness
-
-A k-sensitivity study shows AUC varying by only **0.005 across k ∈ {4,8,12,16}**, suggesting that learned representations are **robust to graph connectivity choices**.
-
----
-
-# Evaluation Metrics
+## Evaluation Metrics
 
 The following metrics were used throughout the experiments:
-
-• ROC-AUC
-• Accuracy
-• Precision / Recall
-• F1-score
-• PR-AUC
-• Confusion matrix
-• Training / validation loss curves
+- ROC-AUC
+- Accuracy
+- Precision / Recall / F1-score
+- PR-AUC
+- Confusion matrix
+- Training / validation loss curves
 
 ---
 
-# Reproducibility
+## Reproducibility
 
-Experiments were conducted using:
+**Hardware:** Kaggle GPU (Tesla P100)
 
-Hardware:
-
-Kaggle GPU (Tesla P100)
-
-Software:
-
+**Software:**
 ```
 PyTorch
 PyTorch Geometric
@@ -289,18 +236,13 @@ Matplotlib
 
 ---
 
-# Conclusion
+## Conclusion
 
 This project demonstrates the effectiveness of **deep learning and graph neural networks for jet physics analysis**.
 
 Key takeaways:
-
-• Autoencoders learn meaningful latent representations of jet detector images
-• Graph neural networks effectively model jet particle interactions
-• Contrastive learning enables **powerful self-supervised graph representation learning**
+- Autoencoders learn meaningful latent representations of jet detector images
+- Graph neural networks effectively model jet particle interactions
+- Contrastive learning enables **powerful self-supervised graph representation learning**
 
 These methods show strong potential for **scalable analysis of high-energy physics datasets**.
-
----
-
-
